@@ -1,13 +1,66 @@
+/* to first project components directiry */
+
+/* * {
+  box-sizing: border-box;
+}
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: Inter, sans-serif;
+  height: 100vh;
+  background-color: #282d35; */
+/* } */
+/* nav {
+  display: flex;
+  align-items: center;
+  background-color: #21222a;
+  height: 90px;
+  padding: 30px 25px;
 }
+.nav-icon {
+  height: 40px;
+} */
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
+/* .nav--logo_text,
+.nav--title {
+  margin: 0; */
+/* }
+.nav--logo_text {
+  margin-right: auto;
+  color: #61dafb;
+  font-weight: 700;
+  font-size: 22px;
+} */
+/* margin-right auto sets h3 close to logo */
+/* .nav--title {
+  color: #deebf8;
+  font-weight: 600;
+} */
+/* main {
+  padding: 57px 27px;
+  color: black;
+  background-image: url(./images/react-js-icon.png);
+  background-repeat: no-repeat;
+  background-position-x: right 75%;
+} */
+/* padding 57px top and bottom 27px left and right */
+/* .main--title {
+  margin: 0;
+  font-size: 39px;
+  letter-spacing: -0.05em;
+  font-family: Inter; */
+/* }
+.main--facts {
+  margin-top: 46px;
+  max-width: 400px;
+} */
+/* margin-top pushes away list form h1 */
+/* .main--facts li {
+  line-height: 19px;
+  padding-block: 10px;
+} */
+/* 
+.main--facts li::marker {
+  font-size: 1.4rem;
+  color: #61dafb;
+} */
+/* li::marker enlarges li dots */

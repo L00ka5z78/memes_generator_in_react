@@ -1,0 +1,126 @@
+import React from "react";
+
+
+// import { Header } from './components/Header';
+// import { MainContent } from './components/MainContent';
+
+// import './App.css';
+// import './index.css'
+
+// export default function App() {
+//   return (
+//     <div className="main-container">
+//       <Header />
+//       <MainContent />
+//     </div>
+
+//   );
+// }
+
+//projct 2 garret thing
+
+
+// import { Interests } from "./components2/Interests";
+// import { Footer } from "./components2/Footer";
+// import { About } from "./components2/About";
+// import { Info } from "./components2/Info";
+
+// export default function App() {
+//   return (
+//     <div className="main">
+//       <Info />
+//       <div className="main--container">
+//         <About />
+//         <Interests />
+//       </div>
+
+//       <Footer />
+//     </div>
+
+//   );
+// }
+
+
+
+
+// import { Navbar } from "./components3/Navbar";
+// import { Hero } from "./components3/Hero";
+// import { Card } from './components3/Card';
+// import data from "./components3/data";
+// console.log(data)
+
+
+// export default function App() {
+
+//   const cards = data.map(item => {
+//     return (
+//       <Card
+//         key={item.id}
+//         title={item.title}
+//         description={item.description}
+//         price={item.price}
+//         coverImg={item.coverImg}
+//         rating={item.stats.rating}
+//         reviewCount={item.stats.reviewCount}
+//         location={item.location}
+//         openSpots={item.openSpots}
+//       />)
+//   })
+//   return (
+//     <div>
+//       <Navbar />
+//       {/* <Hero /> */}
+//       <section className="cards-list">
+//         {cards}
+//       </section>
+//     </div>
+//   );
+// }
+//SOLO PROJECT MODule2
+
+// export default function App() {
+
+//   const cards = data.map(item => {
+//     return (
+//       <Card
+//         key={item.id}
+//         // item={item}
+//         {...item}
+//       /> )
+//   })
+//   return (
+//     <div>
+//       <Navbar />
+//       <Hero />
+//       <section className="cards-list">
+//         {cards}
+//       </section>
+//     </div>
+//   );
+// }
+//SOLO PROJECT MOD 2
+
+import { Navbar } from "./soloprojects/Navbar";
+import data from "./soloprojects/data";
+import { Visit } from "./soloprojects/Visit";
+
+
+export default function App() {
+
+  const cards = data.map(item => {
+    return (
+      <Visit
+        key={item.id}
+        // item={item}
+        {...item}
+      />)
+  })
+  return (
+    <div>
+      <Navbar />
+      <section className="visit-list">
+        {cards}
+      </section>
+    </div>
+  );
+}
