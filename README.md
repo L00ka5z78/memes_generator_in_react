@@ -11,4 +11,4 @@ Tech stack:
 ExpressJs, Javascript, React, no database, memes fetched from url.
 
 
-![meme](https://user-images.githubusercontent.com/110019733/227153398-8d532a52-8c7d-4c71-a468-8cfc2fcc9dc3.png)
+[meme](https://user-images.githubusercontent.com/110019733/227153398-8d532a52-8c7d-4c71-a468-8cfc2fcc9dc3.png)
