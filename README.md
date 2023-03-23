@@ -10,4 +10,5 @@ and create some smart sollution. Some people may laugh at it, but Im proud :)
 Tech stack:
 ExpressJs, Javascript, React, no database, memes fetched from url.
 
-[meme](https://user-images.githubusercontent.com/110019733/227151457-6c08036c-8806-4e3c-ba58-c8cbf7435971.png)
+
+![meme](https://user-images.githubusercontent.com/110019733/227153398-8d532a52-8c7d-4c71-a468-8cfc2fcc9dc3.png)
