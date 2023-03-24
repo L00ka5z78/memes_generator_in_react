@@ -1,0 +1,1003 @@
+app.jsx
+
+import React, { useEffect, useContext } from 'react';
+import './App.css';
+import { Routes, Route } from 'react-router-dom';
+import { Navbar } from './components/Navbar';
+import { Home } from './components/pages/Home';
+import { Register } from './components/pages/Register';
+import { Profile } from './components/pages/Profile';
+import { Login } from './components/pages/Login';
+import { UserContext } from './context/UserContext';
+import { getUser } from './apiCalls/user.calls';
+import { LoggedInHome } from './components/pages/LoggedInHome';
+import { NotProtectedRoutes } from './components/NotProtectedRoutes';
+import { ProtectedRoutes } from './components/ProtectedRoutes';
+import { AddTask } from './components/pages/AddTask';
+import { UpdateProfile } from './components/pages/UpdateProfile';
+import { UpdatePassword } from './components/pages/UpdatePassword';
+import { ViewTask } from './components/pages/ViewTask';
+import { UpdateTask } from './components/pages/UpdateTask';
+
+export const App = () => {
+  const { user, setUser } = useContext(UserContext);
+
+  //avoid to reset logged in user data after page is refreshed
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await getUser();
+      setUser(res.data.user);
+    };
+    fetchData();
+  }, []);
+
+  return (
+    <div className="App bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+      <Navbar user={user} />
+      <Routes>
+        <Route path="/" element={user._id ? <LoggedInHome /> : <Home />} />
+        <Route
+          path="/user/register"
+          element={
+            <NotProtectedRoutes loggedIn={user._id ? true : false}>
+              <Register />
+            </NotProtectedRoutes>
+          }
+        />
+        <Route
+          path="/user/login"
+          element={
+            <NotProtectedRoutes loggedIn={user._id ? true : false}>
+              <Login />
+            </NotProtectedRoutes>
+          }
+        />
+        <Route
+          path="/user/profile"
+          element={
+            <ProtectedRoutes loggedIn={user._id ? true : false}>
+              <Profile />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/todo/create"
+          element={
+            <ProtectedRoutes loggedIn={user._id ? true : false}>
+              <AddTask />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/user/update"
+          element={
+            <ProtectedRoutes loggedIn={user._id ? true : false}>
+              <UpdateProfile />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/user/updatepassword"
+          element={
+            <ProtectedRoutes loggedIn={user._id ? true : false}>
+              <UpdatePassword />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/todo/view/:id"
+          element={
+            <ProtectedRoutes loggedIn={user._id ? true : false}>
+              <ViewTask />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/todo/update/:id"
+          element={
+            <ProtectedRoutes loggedIn={user._id ? true : false}>
+              <UpdateTask />
+            </ProtectedRoutes>
+          }
+        />
+      </Routes>
+    </div>
+  );
+};
+INDEX.js
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import { App } from './App';
+import { BrowserRouter } from 'react-router-dom';
+import { UserContextProvider } from './context/UserContext'
+import { TaskContextProvider } from './context/TaskContext';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+
+  <React.StrictMode>
+    <UserContextProvider>
+      <TaskContextProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </TaskContextProvider>
+    </UserContextProvider>
+  </React.StrictMode>
+
+);
+usercontext.jsx
+import React, { useState, createContext } from 'react';
+
+export const UserContext = createContext({ user: {}, setUser: () => {} });
+
+export const UserContextProvider = ({ children }) => {
+  const [user, setUser] = useState({});
+  return (
+    <UserContext.Provider value={{ user, setUser }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
+
+taskcontex.jsx
+
+import React, { useState, createContext } from 'react';
+
+export const TaskContext = createContext({ task: {}, setUser: () => {} });
+
+export const TaskContextProvider = ({ children }) => {
+  const [task, setTask] = useState({});
+  return (
+    <TaskContext.Provider value={{ task, setTask }}>
+      {children}
+    </TaskContext.Provider>
+  );
+};
+taskList.jsx
+import React, { useContext, useEffect } from 'react';
+import { getTasks } from '../apiCalls/task.calls';
+import { TaskContext } from '../context/TaskContext';
+import { TaskElement } from './TaskElement';
+
+export const TaskList = () => {
+  const { task, setTask } = useContext(TaskContext);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await getTasks();
+      if (response.status === 200) {
+        setTask(response.data.todos);
+      } else {
+        alert(response.response.data.message);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return (
+    <table className="table-auto w-full">
+      <thead>
+        <tr>
+          <th className="border px-4 py-2">Title</th>
+          <th className="border px-4 py-2">Description</th>
+          <th className="border px-4 py-2">Completed</th>
+          <th className="border px-4 py-2">View</th>
+          <th className="border px-4 py-2">Update</th>
+          <th className="border px-4 py-2">Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {task.length > 0 &&
+          task.map((prevTask) => {
+            return <TaskElement key={prevTask._id} prevTask={prevTask} />;
+          })}
+      </tbody>
+    </table>
+  );
+};
+taskElement.jsx
+
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { deleteTask } from '../apiCalls/task.calls';
+
+export const TaskElement = ({ prevTask }) => {
+  const navigate = useNavigate();
+
+  const handleDelete = async (e) => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      const response = await deleteTask(prevTask._id);
+      if (response.status === 200) {
+        alert(response.data.message);
+        // window.location.reload();    //doesnt refresh page :/
+        navigate('/user/profile'); //doesnt redirect
+      } else {
+        alert(response.response.data.message);
+      }
+    }
+  };
+
+  return (
+    <tr>
+      <td className="border px-4 py-2">{prevTask.title}</td>
+      <td className="border px-4 py-2">{prevTask.description}</td>
+      <td className="border px-4 py-2">
+        {prevTask.completed ? 'Completed' : 'Not yet...'}
+      </td>
+      <td className="border px-4 py-2">
+        <button
+          onClick={() => navigate(`/todo/view/${prevTask._id}`)}
+          className="bg-blue-700 text-white px-2 rounded"
+        >
+          View
+        </button>
+      </td>
+      <td className="border px-4 py-2">
+        <button
+          onClick={() => navigate(`/todo/update/${prevTask._id}`)}
+          className="bg-green-600 text-white px-2 rounded"
+        >
+          Update
+        </button>
+      </td>
+      <td className="border px-4 py-2">
+        <button
+          onClick={handleDelete}
+          className="bg-red-500 text-white px-2 rounded"
+        >
+          Delete
+        </button>
+      </td>
+    </tr>
+  );
+};
+/**delete works, but it doesnt refresh page, and it throws error in console unauthorized, check and try to figure it out and fix */
+
+protected Routes.jsx
+
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+
+export const ProtectedRoutes = ({ loggedIn, children }) => {
+  if (!loggedIn) {
+    return <Navigate to="/user/login" replace />;
+  }
+  return children;
+};
+
+NotProtectedRoutes.jsx
+import { Navigate } from 'react-router-dom';
+
+export const NotProtectedRoutes = ({ loggedIn, children }) => {
+  if (loggedIn) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
+NVBR.jsx
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+export const Navbar = ({ user }) => {
+  return (
+    <nav className="bg-black py-3 text-white flex items-center justify-between  ">
+      <h1 className="ml-1 font-bold text-2xl">
+        Things I want to do before I die
+      </h1>
+      <ul className="flex">
+        {user._id && (
+          <>
+            <li className="mr-3">
+              <Link className="hover:text-pink-500" to="/">
+                Home
+              </Link>
+            </li>
+            <li className="mr-3">
+              <Link className="hover:text-pink-500" to="/todo/create">
+                Add task
+              </Link>
+            </li>
+            <li className="mr-3">
+              <Link className="hover:text-pink-500" to="user/profile">
+                Profile
+              </Link>
+            </li>
+          </>
+        )}
+        {!user._id && (
+          <>
+            <li className="mr-3">
+              <Link className="hover:text-pink-500" to="user/register">
+                Register
+              </Link>
+            </li>
+            <li className="mr-3">
+              <Link className="hover:text-pink-500" to="user/login">
+                Login
+              </Link>
+            </li>
+          </>
+        )}
+      </ul>
+    </nav>
+  );
+};
+
+view.task.jsx
+
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getTask } from '../../apiCalls/task.calls';
+
+export const ViewTask = () => {
+  const [todo, setTodo] = useState({});
+  const { id } = useParams();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await getTask(id);
+      if (response.status === 200) {
+        setTodo(response.data.todo);
+      } else {
+        alert(response.response.data.message);
+      }
+    };
+    fetchData();
+  }, []);
+  return (
+    <div className="text-center bg-white w-3/4 m-auto rounded py-3 mt-3">
+      {todo && (
+        <div>
+          <h1 className="text-3xl mt-4 font-bold">Title: {todo.title}</h1>
+          <h2 className="mt-3 text-2xl">
+            Completed: {todo.completed ? 'Completed' : 'Not yet...'}
+          </h2>
+          <p className="mt-3">Description: {todo.description}</p>
+          <p className="mt-3">Created: {todo.createdAt}</p>
+          <p className="mt-3">Updated: {todo.updatedAt}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+UPDATETASK.jsx
+import React, { useContext, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { updateTask } from '../../apiCalls/task.calls';
+import { TaskContext } from '../../context/TaskContext';
+
+export const UpdateTask = () => {
+  const { task, setTask } = useContext(TaskContext);
+  const { id } = useParams();
+  const myTodo = task.find((todo) => todo._id === id);
+  const [title, setTitle] = useState(myTodo.title);
+  const [description, setDescription] = useState(myTodo.description);
+  const [completed, setCompleted] = useState(myTodo.completed);
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = { title, description, completed };
+    const response = await updateTask(id, data);
+    if (response.status === 200) {
+      alert('Successfully updated.');
+      //   alert(response.response.data.message);
+      navigate('/');
+    } else {
+      alert(response.response.data.message);
+    }
+  };
+
+  return (
+    <div className="w-1/4 m-auto text-center">
+      <h1 className="text-3xl my-3 font-bold">Update task</h1>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <input
+            type="text"
+            placeholder="insert title..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-3">
+          <textarea
+            placeholder="write something..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            cols="30"
+            rows="5"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          ></textarea>
+        </div>
+        <div className="mb-3">
+          <select
+            value={completed}
+            onChange={(e) => setCompleted(e.target.value)}
+            className="focus:outline-none border-none p-2 rounded w-full"
+          >
+            <option value="false">Not completed</option>
+            <option value="true">Completed</option>
+          </select>
+        </div>
+        <button type="submit" className="bg-black text-white w-full py-2">
+          Update
+        </button>
+      </form>
+    </div>
+  );
+};
+
+/**textarea goes too wide when description is longer, and ruins styling.
+ * if description is short it is all right UpdateTask
+ */
+
+
+ UPDATEPROFILE.jsx
+ import React, { useContext, useState } from 'react';
+import { UserContext } from '../../context/UserContext';
+import { useNavigate } from 'react-router-dom';
+import { updateUser } from '../../apiCalls/user.calls';
+
+export const UpdateProfile = () => {
+  const { user, setUser } = useContext(UserContext);
+
+  const [name, setName] = useState(user.name);
+  const [email, setEmail] = useState(user.email);
+  const [age, setAge] = useState(user.age);
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = { name, email, age };
+    const response = await updateUser(data);
+    if (response.status === 200) {
+      alert('Profile successfully updated.');
+      setUser(response.data.user);
+      navigate('/user/profile');
+    } else {
+      alert(response.response.data.message);
+    }
+  };
+
+  return (
+    <div className="w-1/4 m-auto text-center">
+      <h1 className="text-3x1 my-3 font-bold">Update Profile</h1>
+      <form action="" onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <input
+            type="text"
+            placeholder="insert your nickname..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div className="mb-3">
+          <input
+            type="email"
+            placeholder="insert valid email..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <div className="mb-3">
+          <input
+            type="number"
+            placeholder="insert age..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+          />
+        </div>
+        <button type="submit" className="bg-black text-white w-full py-2">
+          Update Profile
+        </button>
+      </form>
+    </div>
+  );
+};
+
+UPDATEPASSWORD.jsx
+
+import React, { useState } from 'react';
+import { updatePassword } from '../../apiCalls/user.calls';
+import { useNavigate } from 'react-router-dom';
+
+export const UpdatePassword = () => {
+  const [oldPassword, setOldPassword] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (password !== passwordConfirm) {
+      alert('Password does NOT match');
+      return;
+    }
+
+    const data = {
+      password: oldPassword,
+      newPassword: password,
+    };
+    const response = await updatePassword(data);
+    if (response.status === 200) {
+      alert('Password successfully updated.');
+      navigate('/user/profile');
+    } else {
+      alert(response.response.data.message);
+    }
+  };
+
+  return (
+    <div className="w-1/4 m-auto text-center">
+      <h1 className="text-3x1 my-3 font-bold">Update Password</h1>
+      <form action="" onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <input
+            type="password"
+            placeholder="insert old password..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+          />
+        </div>
+        <div className="mb-3">
+          <input
+            type="password"
+            placeholder="insert new password..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <div className="mb-3">
+          <input
+            type="password"
+            placeholder="confirm new password..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={passwordConfirm}
+            onChange={(e) => setPasswordConfirm(e.target.value)}
+          />
+        </div>
+        <button type="submit" className="bg-black text-white w-full py-2">
+          Update Password
+        </button>
+      </form>
+    </div>
+  );
+};
+
+
+EGISTER.jsx
+import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { register } from '../../apiCalls/user.calls';
+import { UserContext } from '../../context/UserContext';
+
+export const Register = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [age, setAge] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+
+  const navigate = useNavigate();
+  const { user, setUser } = useContext(UserContext);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (password !== passwordConfirm) {
+      alert('Password does not match!');
+      return;
+    }
+    const data = { name, email, age, password };
+    const response = await register(data);
+    if (response.status === 201) {
+      alert('User successfully registered.');
+      setUser(response.data.user);
+      navigate('/');
+    } else {
+      alert(response.response.data.message);
+    }
+  };
+  //validation messages not fetched from BE! throws Undefined. try to fix it
+  return (
+    <div className="w-1/4 m-auto text-center">
+      <h1 className="text-3x1 my-3 font-bold">Register</h1>
+      <form action="" onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <input
+            type="text"
+            placeholder="insert your nickname..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div className="mb-3">
+          <input
+            type="email"
+            placeholder="insert valid email..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-3">
+          <input
+            type="number"
+            placeholder="insert age..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+          />
+        </div>
+        <div className="mb-3">
+          <input
+            type="password"
+            placeholder="insert password..."
+            className="focus:outline-none border-none p-2 rounded w-full rounded"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <div className="mb-3">
+          <input
+            type="password"
+            placeholder="confirm password..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={passwordConfirm}
+            onChange={(e) => setPasswordConfirm(e.target.value)}
+          />
+        </div>
+        <button type="submit" className="bg-black text-white w-full py-2">
+          Register
+        </button>
+      </form>
+    </div>
+  );
+};
+
+PROFILE.jsx
+import React, { useContext } from 'react';
+import { UserContext } from '../../context/UserContext';
+import { useNavigate } from 'react-router-dom';
+import { deleteUser, logout } from '../../apiCalls/user.calls';
+
+export const Profile = () => {
+  const { user, setUser } = useContext(UserContext);
+  const navigate = useNavigate();
+
+  const handleLogout = async (e) => {
+    const response = await logout();
+    if (response.status === 200) {
+      alert('User logged out successfully.');
+      setUser({});
+      navigate('/user/login');
+    } else {
+      alert(response.response.data.message);
+    }
+  };
+
+  const handleDelete = async (e) => {
+    if (window.confirm('Are you sure you want to delete your account?')) {
+      const response = await deleteUser();
+      if (response.status === 200) {
+        alert('User deleted successfully.');
+        setUser({});
+        navigate('/user/login');
+      } else {
+        alert(response.response.data.message);
+      }
+    }
+  };
+
+  return (
+    <div className="w-1/4 m-auto text-center">
+      <h1 className="text-3x1 my-3 font-bold">Profile</h1>
+      <div className="mt-3">
+        <h2 className="text-2xl">Name: {user.name}</h2>
+        <h2 className="text-2xl">Email: {user.email}</h2>
+        <h2 className="text-2xl">Age: {user.age}</h2>
+      </div>
+      <div className="mt-3">
+        <button
+          onClick={() => navigate('/user/update')}
+          className="my-2 bg-green-600 text-white w-full py-2 rounded"
+        >
+          Update profile
+        </button>
+        <button
+          onClick={() => navigate('/user/updatepassword')}
+          className="my-2 bg-green-600 text-white w-full py-2 rounded"
+        >
+          Update password
+        </button>
+        <button
+          onClick={handleLogout}
+          className="my-2 bg-green-600 text-white w-full py-2 rounded"
+        >
+          Logout
+        </button>
+        <button
+          onClick={handleDelete}
+          className="my-2 bg-red-600 text-white w-full py-2 rounded"
+        >
+          Delete Account
+        </button>
+      </div>
+    </div>
+  );
+};
+LOGIN.JSX
+
+import React, { useState, useContext } from 'react';
+import { login } from '../../apiCalls/user.calls.js';
+import { UserContext } from '../../context/UserContext';
+import { useNavigate } from 'react-router-dom';
+
+export const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const { user, setUser } = useContext(UserContext);
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const data = { email, password };
+    const response = await login(data);
+    if (response.status === 200) {
+      alert('User logged in successfully.');
+      setUser(response.data.user);
+      navigate('/');
+    } else {
+      alert(response.response.data.message);
+    }
+  };
+  //validation messages not fetched from BE! throws Undefined. try to fix it
+
+  return (
+    <div className="w-1/4 m-auto text-center">
+      <h1 className="text-3x1 my-3 font-bold">Login</h1>
+      <form action="" onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <input
+            type="email"
+            placeholder="insert valid email..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-3">
+          <input
+            type="password"
+            placeholder="insert password..."
+            className="focus:outline-none border-none p-2 rounded w-full rounded"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+        <button type="submit" className="bg-black text-white w-full py-2">
+          Login
+        </button>
+      </form>
+    </div>
+  );
+};
+LoggedInHome.JSX
+
+
+import React from 'react';
+import { TaskList } from '../TaskList';
+
+export const LoggedInHome = () => {
+  return (
+    <div className="w-5/6 m-auto text-center">
+      <h1 className="text-center text-3xl mb-4">View Task</h1>
+      <TaskList />
+    </div>
+  );
+};
+
+HOME.JSX
+
+import React from 'react';
+
+export const Home = () => {
+  return <div>Home</div>;
+};
+
+addTask.jsx
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createTask } from '../../apiCalls/task.calls';
+
+export const AddTask = () => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = { title, description };
+    const response = await createTask(data);
+    if (response.status === 201) {
+      alert('Task created');
+      navigate('/');
+    } else {
+      alert(response.response.data.message);
+    }
+  };
+
+  return (
+    <div className="w-1/4 m-auto text-center">
+      <h1 className="text-3x1 my-3 font-bold">Add task</h1>
+      <form action="" onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <input
+            type="text"
+            placeholder="insert title..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-3">
+          <textarea
+            placeholder="write something..."
+            className="focus:outline-none border-none p-2 rounded w-full"
+            cols="30"
+            rows="5"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          ></textarea>
+        </div>
+        <button type="submit" className="bg-black text-white w-full py-2">
+          Add
+        </button>
+      </form>
+    </div>
+  );
+};
+
+usercalls.js
+
+import axios from 'axios';
+
+export const register = async (user) => {
+    try {
+        const res = await axios.post("/api/users/register", user);
+        return res;
+    } catch (err) {
+        return err;
+    }
+}
+
+export const login = async (user) => {
+    try {
+        const res = await axios.post("/api/users/login", user);
+        return res;
+    } catch (err) {
+        return err;
+    }
+}
+
+export const logout = async () => {
+    try {
+        const res = await axios.get("/api/users/logout");
+        return res;
+    } catch (err) {
+        return err;
+    }
+}
+
+export const getUser = async () => {
+    try {
+        const res = await axios.get("/api/users/me");
+        return res;
+    } catch (err) {
+        return err;
+    }
+}
+
+export const updateUser = async (user) => {
+    try {
+        const res = await axios.put("/api/users/updatedetails", user);
+        return res;
+    } catch (err) {
+        return err;
+    }
+}
+
+export const updatePassword = async (data) => {
+    try {
+        const res = await axios.put("/api/users/updatepassword", data);
+        return res;
+    } catch (err) {
+        return err;
+    }
+}
+
+export const deleteUser = async () => {
+    try {
+        const res = await axios.delete("/api/users/delete");
+        return res;
+    } catch (err) {
+        return err;
+    }
+}
+
+
+taskcalls.js
+
+
+import axios from "axios";
+
+
+export const createTask = async (todo) => {
+    try {
+        const res = await axios.post("/api/todos/create", todo);
+        return res;
+    } catch (err) {
+        return err;
+    }
+}
+
+export const getTasks = async () => {
+    try {
+        const res = await axios.get("/api/todos");
+        return res;
+    } catch (err) {
+        return err;
+    }
+}
+
+
+
+export const getTask = async (id) => {
+    try {
+        const res = await axios.get(`/api/todos/${id}`);
+        return res;
+    } catch (err) {
+        return err;
+    }
+}
+
+export const updateTask = async (id, todo) => {
+    try {
+        const res = await axios.put(`/api/todos/update/${id}`, todo);
+        return res;
+    } catch (err) {
+        return err;
+    }
+}
+
+
+export const deleteTask = async (id) => {
+    try {
+        const res = await axios.delete(`/api/todos/delete/${id}`);
+        return res;
+    } catch (err) {
+        return err;
+    }
+}

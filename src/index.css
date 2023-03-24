@@ -2,13 +2,13 @@
 
 /* * {
   box-sizing: border-box;
-}
-body {
+} */
+/* body {
   margin: 0;
   font-family: Inter, sans-serif;
   height: 100vh;
-  background-color: #282d35; */
-/* } */
+  background-color: #282d35;
+} */
 /* nav {
   display: flex;
   align-items: center;
@@ -18,13 +18,13 @@ body {
 }
 .nav-icon {
   height: 40px;
-} */
+}
 
-/* .nav--logo_text,
+.nav--logo_text,
 .nav--title {
-  margin: 0; */
-/* }
-.nav--logo_text {
+  margin: 0;
+} */
+/* .nav--logo_text {
   margin-right: auto;
   color: #61dafb;
   font-weight: 700;
@@ -42,13 +42,14 @@ body {
   background-repeat: no-repeat;
   background-position-x: right 75%;
 } */
-/* padding 57px top and bottom 27px left and right */
+/* padding 57px top and bottom 27px left and right  */
+
 /* .main--title {
   margin: 0;
   font-size: 39px;
   letter-spacing: -0.05em;
-  font-family: Inter; */
-/* }
+  font-family: Inter;
+}
 .main--facts {
   margin-top: 46px;
   max-width: 400px;
@@ -56,11 +57,11 @@ body {
 /* margin-top pushes away list form h1 */
 /* .main--facts li {
   line-height: 19px;
-  padding-block: 10px;
-} */
-/* 
+  padding-block: 10px; */
+/* }
+
 .main--facts li::marker {
   font-size: 1.4rem;
   color: #61dafb;
 } */
-/* li::marker enlarges li dots */
+/* li::marker enlarges li dots*/
